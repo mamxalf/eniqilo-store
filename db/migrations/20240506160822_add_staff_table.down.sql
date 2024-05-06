@@ -1,0 +1,6 @@
+BEGIN;
+
+DROP TABLE IF EXISTS staffs CASCADE;
+DROP TRIGGER IF EXISTS set_staffs_updated_at ON staffs CASCADE;
+
+COMMIT;
