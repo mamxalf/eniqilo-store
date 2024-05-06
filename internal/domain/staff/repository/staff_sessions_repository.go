@@ -24,7 +24,8 @@ func (u *StaffRepositoryInfra) Register(ctx context.Context, staffRegister *mode
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRowContext(ctx, staffRegister).Scan(&id)
+	// Extract fields from staffRegister and pass them to QueryRowContext
+	err = stmt.QueryRowContext(ctx, staffRegister.Name, staffRegister.Phone, staffRegister.Password).Scan(&id)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			// Check if the error code is for a unique violation
