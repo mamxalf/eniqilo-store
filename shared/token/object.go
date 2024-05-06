@@ -7,9 +7,9 @@ import (
 )
 
 type UserData struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phoneNumber"`
 }
 
 type GenerateTokenParams struct {
