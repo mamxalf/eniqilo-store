@@ -22,9 +22,34 @@ func InitLogger() {
 	log.Trace().Msg("Zerolog initialized.")
 }
 
+// FatalError logs fatal with message.
+func FatalError(err error, message string) {
+	log.Fatal().Err(err).Msg(message)
+}
+
 // ErrorWithStack logs and error and its stack trace with custom formatting.
 func ErrorWithStack(err error) {
 	log.Error().Msgf("%+v", errors.WithStack(err))
+}
+
+// ErrorInterfaceWithMessage logs and error and show interface data usually parameters/req data.
+func ErrorInterfaceWithMessage(err error, message string, key string, args interface{}) {
+	log.Error().Err(err).Interface(key, args).Msg(message)
+}
+
+// ErrorWithMessage logs and error with message.
+func ErrorWithMessage(err error, message string) {
+	log.Error().Err(err).Msg(message)
+}
+
+// Info just logs info with message.
+func Info(message string) {
+	log.Info().Msg(message)
+}
+
+// WarningWithMessage logs and warning with message.
+func WarningWithMessage(err error, message string) {
+	log.Warn().Err(err).Msg(message)
 }
 
 // SetLogLevel sets the desired log level specified in env var.
