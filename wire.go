@@ -10,7 +10,10 @@ import (
 	"github.com/mamxalf/eniqilo-store/http/middleware"
 	"github.com/mamxalf/eniqilo-store/http/router"
 	"github.com/mamxalf/eniqilo-store/infra"
+	repositoryStaff "github.com/mamxalf/eniqilo-store/internal/domain/staff/repository"
+	serviceStaff "github.com/mamxalf/eniqilo-store/internal/domain/staff/service"
 	"github.com/mamxalf/eniqilo-store/internal/handler/health"
+	"github.com/mamxalf/eniqilo-store/internal/handler/staff"
 )
 
 var configurations = wire.NewSet(
@@ -21,9 +24,22 @@ var persistences = wire.NewSet(
 	infra.ProvidePostgresConn,
 )
 
+var domainStaff = wire.NewSet(
+	serviceStaff.ProvideStaffServiceImpl,
+	wire.Bind(new(serviceStaff.StaffService), new(*serviceStaff.StaffServiceImpl)),
+	repositoryStaff.ProvideStaffRepositoryInfra,
+	wire.Bind(new(repositoryStaff.StaffRepository), new(*repositoryStaff.StaffRepositoryInfra)),
+)
+
+// Wiring for all domains.
+var domains = wire.NewSet(
+	domainStaff,
+)
+
 var routing = wire.NewSet(
 	wire.Struct(new(router.DomainHandlers), "*"),
 	health.ProvideHealthHandler,
+	staff.ProvideStaffHandler,
 	router.ProvideRouter,
 )
 
@@ -39,6 +55,8 @@ func InitializeService() *http.HTTP {
 		persistences,
 		// middleware
 		authMiddleware,
+		//domains
+		domains,
 		// routing
 		routing,
 		// selected transport layer

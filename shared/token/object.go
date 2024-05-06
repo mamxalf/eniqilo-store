@@ -23,9 +23,9 @@ type Token struct {
 
 // JWTToken is
 type JWTToken struct {
-	Name    string `json:"name"`
-	Email   string `json:"email"`
-	OwnerID string `json:"ownerID"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phoneNumber"`
+	OwnerID     string `json:"ownerID"`
 	jwt.StandardClaims
 }
 
