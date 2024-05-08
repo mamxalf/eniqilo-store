@@ -13,7 +13,7 @@ func (r *ProductRepositoryInfra) FindAll(ctx context.Context, params request.Pro
 	var conditions []string
 	var args []interface{}
 
-	baseQuery := "SELECT * FROM products WHERE 1=1"
+	baseQuery := "SELECT * FROM products WHERE 1=1 AND is_available = true"
 
 	if params.Name != "" {
 		conditions = append(conditions, "name ILIKE $"+fmt.Sprint(len(args)+1))
