@@ -31,3 +31,13 @@ func (r *RegisterRequest) ToModel() (register model.StaffRegister, err error) {
 	}
 	return
 }
+
+type LoginRequest struct {
+	PhoneNumber string `validate:"required,min=10,max=16,e164" json:"phoneNumber" example:"+6285123546789"`
+	Password    string `validate:"required,alphanum,min=5,max=15" json:"password,omitempty" example:"s3Cr3Tk3y"`
+}
+
+func (r *LoginRequest) Validate() (err error) {
+	validate := validator.GetValidator()
+	return validate.Struct(r)
+}

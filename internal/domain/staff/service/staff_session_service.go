@@ -7,7 +7,7 @@ import (
 	"github.com/mamxalf/eniqilo-store/shared/failure"
 	"github.com/mamxalf/eniqilo-store/shared/logger"
 	"github.com/mamxalf/eniqilo-store/shared/token"
-	"github.com/rs/zerolog/log"
+	"github.com/mamxalf/eniqilo-store/shared/utils"
 	"net/http"
 )
 
@@ -41,16 +41,57 @@ func (s *StaffServiceImpl) RegisterNewStaff(ctx context.Context, req request.Reg
 
 	generatedToken, err := token.GenerateToken(userData, generateTokenParams)
 	if err != nil {
-		log.Err(err).Msg("[Login - Service] Generate Token Error")
+		logger.ErrorInterfaceWithMessage(err, "failed generate token", "generateTokenParams", generateTokenParams)
 		return
 	}
 
 	// TODO: save user sessions if needed
 
 	res = response.SessionResponse{
+		UserID:      userData.ID,
 		AccessToken: generatedToken.AccessToken,
-		PhoneNumber: req.PhoneNumber,
-		Name:        req.Name,
+		PhoneNumber: userData.PhoneNumber,
+		Name:        userData.Name,
+	}
+
+	return
+}
+
+func (s *StaffServiceImpl) LoginStaff(ctx context.Context, req request.LoginRequest) (res response.SessionResponse, err error) {
+	staff, err := s.StaffRepository.FindByPhone(ctx, req.PhoneNumber)
+	if err != nil {
+		logger.ErrorWithMessage(err, "Failed Get Staff Data ByPhone")
+		return
+	}
+
+	err = utils.CheckPasswordHash(req.Password, staff.Password)
+	if err != nil {
+		err = failure.BadRequest(err)
+		logger.ErrorWithMessage(err, "Invalid Password!")
+		return
+	}
+
+	generateTokenParams := &token.GenerateTokenParams{
+		AccessTokenSecret: s.Config.JwtSecret,
+		AccessTokenExpiry: s.Config.JwtExpiry,
+	}
+
+	staffData := &token.UserData{
+		ID:          staff.ID.String(),
+		Name:        staff.Name,
+		PhoneNumber: staff.Phone,
+	}
+	generatedToken, err := token.GenerateToken(staffData, generateTokenParams)
+	if err != nil {
+		logger.ErrorInterfaceWithMessage(err, "failed generate token", "generateTokenParams", generateTokenParams)
+		return
+	}
+
+	res = response.SessionResponse{
+		UserID:      staff.ID.String(),
+		AccessToken: generatedToken.AccessToken,
+		PhoneNumber: staff.Phone,
+		Name:        staff.Name,
 	}
 
 	return

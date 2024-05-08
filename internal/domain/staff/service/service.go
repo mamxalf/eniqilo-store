@@ -10,6 +10,7 @@ import (
 
 type StaffService interface {
 	RegisterNewStaff(ctx context.Context, req request.RegisterRequest) (res response.SessionResponse, err error)
+	LoginStaff(ctx context.Context, req request.LoginRequest) (res response.SessionResponse, err error)
 }
 
 type StaffServiceImpl struct {

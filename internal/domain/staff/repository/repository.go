@@ -9,6 +9,7 @@ import (
 
 type StaffRepository interface {
 	Register(ctx context.Context, staffRegister *model.StaffRegister) (id uuid.UUID, err error)
+	FindByPhone(ctx context.Context, phoneNumber string) (user model.Staff, err error)
 }
 
 type StaffRepositoryInfra struct {

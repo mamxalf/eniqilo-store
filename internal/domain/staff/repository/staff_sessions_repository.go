@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/mamxalf/eniqilo-store/internal/domain/staff/model"
@@ -33,6 +35,21 @@ func (u *StaffRepositoryInfra) Register(ctx context.Context, staffRegister *mode
 				err = failure.Conflict("Duplicate key error occurred", pqErr.Message)
 				return
 			}
+		}
+		logger.ErrorWithStack(err)
+		err = failure.InternalError(err)
+		return
+	}
+	return
+}
+
+func (u *StaffRepositoryInfra) FindByPhone(ctx context.Context, phoneNumber string) (user model.Staff, err error) {
+	query := "SELECT * FROM staffs WHERE phone = $1 LIMIT 1"
+	err = u.DB.PG.GetContext(ctx, &user, query, phoneNumber)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = failure.NotFound("Staff not found!")
+			return
 		}
 		logger.ErrorWithStack(err)
 		err = failure.InternalError(err)
