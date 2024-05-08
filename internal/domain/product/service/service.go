@@ -23,7 +23,7 @@ type ProductService interface {
 
 type ProductServiceImpl struct {
 	ProductRepository productRepository.ProductRepository
-	staffRepository   staffRepository.StaffRepository
+	StaffRepository   staffRepository.StaffRepository
 	Config            *config.Config
 }
 
@@ -35,7 +35,7 @@ func ProvideProductServiceImpl(
 ) *ProductServiceImpl {
 	s := new(ProductServiceImpl)
 	s.ProductRepository = productRepository
-	s.staffRepository = staffRepository
+	s.StaffRepository = staffRepository
 	s.Config = config
 	return s
 }

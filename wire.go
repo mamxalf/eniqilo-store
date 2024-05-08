@@ -10,9 +10,12 @@ import (
 	"github.com/mamxalf/eniqilo-store/http/middleware"
 	"github.com/mamxalf/eniqilo-store/http/router"
 	"github.com/mamxalf/eniqilo-store/infra"
+	repositoryProduct "github.com/mamxalf/eniqilo-store/internal/domain/product/repository"
+	serviceProduct "github.com/mamxalf/eniqilo-store/internal/domain/product/service"
 	repositoryStaff "github.com/mamxalf/eniqilo-store/internal/domain/staff/repository"
 	serviceStaff "github.com/mamxalf/eniqilo-store/internal/domain/staff/service"
 	"github.com/mamxalf/eniqilo-store/internal/handler/health"
+	"github.com/mamxalf/eniqilo-store/internal/handler/product"
 	"github.com/mamxalf/eniqilo-store/internal/handler/staff"
 )
 
@@ -30,16 +33,24 @@ var domainStaff = wire.NewSet(
 	repositoryStaff.ProvideStaffRepositoryInfra,
 	wire.Bind(new(repositoryStaff.StaffRepository), new(*repositoryStaff.StaffRepositoryInfra)),
 )
+var domainProduct = wire.NewSet(
+	serviceProduct.ProvideProductServiceImpl,
+	wire.Bind(new(serviceProduct.ProductService), new(*serviceProduct.ProductServiceImpl)),
+	repositoryProduct.ProvideProductRepositoryInfra,
+	wire.Bind(new(repositoryProduct.ProductRepository), new(*repositoryProduct.ProductRepositoryInfra)),
+)
 
 // Wiring for all domains.
 var domains = wire.NewSet(
 	domainStaff,
+	domainProduct,
 )
 
 var routing = wire.NewSet(
 	wire.Struct(new(router.DomainHandlers), "*"),
 	health.ProvideHealthHandler,
 	staff.ProvideStaffHandler,
+	product.ProvideProductHandler,
 	router.ProvideRouter,
 )
 
