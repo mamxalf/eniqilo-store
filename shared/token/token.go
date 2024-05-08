@@ -40,9 +40,9 @@ func GenerateJWT(user *UserData, tokenSecret string, tokenExpiry time.Duration) 
 			IssuedAt:  time.Now().UTC().Unix(),
 			Subject:   user.ID,
 		},
-		Name:    user.Name,
-		Email:   user.Email,
-		OwnerID: user.ID,
+		Name:        user.Name,
+		PhoneNumber: user.PhoneNumber,
+		OwnerID:     user.ID,
 	}
 
 	token := jwt.NewWithClaims(

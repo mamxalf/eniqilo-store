@@ -7,9 +7,9 @@ import (
 )
 
 type UserData struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phoneNumber"`
 }
 
 type GenerateTokenParams struct {
@@ -23,9 +23,9 @@ type Token struct {
 
 // JWTToken is
 type JWTToken struct {
-	Name    string `json:"name"`
-	Email   string `json:"email"`
-	OwnerID string `json:"ownerID"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phoneNumber"`
+	OwnerID     string `json:"ownerID"`
 	jwt.StandardClaims
 }
 

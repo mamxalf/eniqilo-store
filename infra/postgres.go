@@ -1,11 +1,11 @@
 package infra
 
 import (
+	"context"
 	"fmt"
+	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/mamxalf/eniqilo-store/config"
-
-	_ "github.com/lib/pq" // add this
 	"github.com/rs/zerolog/log"
 )
 
@@ -21,14 +21,15 @@ func ProvidePostgresConn(config *config.Config) *PostgresConn {
 
 func CreatePostgresDBConnection(config *config.Config) *sqlx.DB {
 	connStr := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s?%s",
+		"postgres://%s:%s@%s:%s/%s?%s",
 		config.DbUsername,
 		config.DbPassword,
 		config.DbHost,
 		config.DbPort,
 		config.DbName,
 		config.DbParams)
-	db, err := sqlx.Open("postgres", connStr)
+	// Create a configuration object
+	db, err := sqlx.ConnectContext(context.Background(), "pgx", connStr)
 	if err != nil {
 		log.
 			Fatal().
