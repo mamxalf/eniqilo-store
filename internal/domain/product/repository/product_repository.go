@@ -23,8 +23,8 @@ var productQueries = struct {
 	DeleteProduct string
 }{
 	InsertProduct: "INSERT INTO products %s VALUES %s RETURNING id",
-	GetProduct:    "SELECT * FROM products WHERE 1=1",
-	GetAllProduct: "SELECT * FROM products %s",
+	GetProduct:    "SELECT * FROM products %s",
+	GetAllProduct: "SELECT * FROM products",
 	DeleteProduct: "DELETE FROM products WHERE id = $1",
 }
 
@@ -44,7 +44,7 @@ func (p *ProductRepositoryInfra) Insert(ctx context.Context, product model.Inser
 
 func (p *ProductRepositoryInfra) Find(ctx context.Context, productID uuid.UUID) (product model.Product, err error) {
 	whereClauses := " WHERE id = $1 LIMIT 1"
-	query := fmt.Sprintf(productQueries.GetAllProduct, whereClauses)
+	query := fmt.Sprintf(productQueries.GetProduct, whereClauses)
 	err = p.DB.PG.GetContext(ctx, &product, query, productID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -96,11 +96,19 @@ func (p *ProductRepositoryInfra) FindAll(ctx context.Context, StaffID uuid.UUID,
 	// Check if product is available
 	if params.IsAvailable {
 		conditions = append(conditions, "isavailable = true")
+	} else {
+		conditions = append(conditions, "isavailable = false")
+	}
+	// Check if product is in stock
+	if params.InStock {
+		conditions = append(conditions, "stock > 0")
+	} else {
+		conditions = append(conditions, "stock <= 0")
 	}
 
 	// Adding the conditions to the base query
 	if len(conditions) > 0 {
-		baseQuery += " AND " + strings.Join(conditions, " AND ")
+		baseQuery += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
 	// Adding sorting by price
@@ -124,15 +132,28 @@ func (p *ProductRepositoryInfra) FindAll(ctx context.Context, StaffID uuid.UUID,
 	}
 
 	// Adding pagination with proper indexing
-	args = append(args, params.Limit, params.Offset)
 	baseQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
+	args = append(args, params.Limit, params.Offset)
 
+	fmt.Println("Owned:", params.Owned)
+	fmt.Println("ID:", params.ID)
+	fmt.Println("SKU:", params.SKU)
+	fmt.Println("Category:", params.Category)
+	fmt.Println("Search:", params.Search)
+	fmt.Println("IsAvailable:", params.IsAvailable)
+	fmt.Println("Price:", params.Price)
+	fmt.Println("CreatedAt:", params.CreatedAt)
+	fmt.Println("InStock:", params.InStock)
+	fmt.Println("Limit:", params.Limit)
+	fmt.Println("Offset:", params.Offset)
+	fmt.Println("baseQuery:", baseQuery)
 	// Executing the query
 	err = p.DB.PG.SelectContext(ctx, &products, baseQuery, args...)
 	if err != nil {
 		return nil, err
 	}
 	return products, nil
+
 }
 
 func (p *ProductRepositoryInfra) Update(ctx context.Context, productID uuid.UUID, product model.Product) (updatedProduct *model.Product, err error) {

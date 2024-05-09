@@ -40,14 +40,14 @@ func (h *ProductHandler) InsertNewProduct(w http.ResponseWriter, r *http.Request
 		response.WithError(w, failure.BadRequest(err))
 		return
 	}
-	claimUser, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
+	claimStaff, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
 	if !ok {
 		log.Warn().Msg("invalid claim jwt")
 		err := failure.Unauthorized("invalid claim jwt")
 		response.WithError(w, err)
 		return
 	}
-	staffID, err := uuid.Parse(claimUser["ownerID"].(string))
+	staffID, err := uuid.Parse(claimStaff["ownerID"].(string))
 	if err != nil {
 		log.Warn().Msg(err.Error())
 		err = failure.Unauthorized("invalid format user_id")
@@ -77,14 +77,14 @@ func (h *ProductHandler) InsertNewProduct(w http.ResponseWriter, r *http.Request
 // @Router /v1/product/{id} [get]
 func (h *ProductHandler) Find(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	claimUser, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
+	claimStaff, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
 	if !ok {
 		log.Warn().Msg("invalid claim jwt")
 		err := failure.Unauthorized("invalid claim jwt")
 		response.WithError(w, err)
 		return
 	}
-	staffID, err := uuid.Parse(claimUser["ownerID"].(string))
+	staffID, err := uuid.Parse(claimStaff["ownerID"].(string))
 	if err != nil {
 		log.Warn().Msg(err.Error())
 		err = failure.Unauthorized("invalid format user_id")
@@ -130,21 +130,14 @@ func (h *ProductHandler) FindAllProductData(w http.ResponseWriter, r *http.Reque
 	request.Search = query.Get("search")
 	request.ID = query.Get("id")
 
-	// Parse numerical values
-	request.Limit, _ = strconv.Atoi(query.Get("limit"))
-	request.Offset, _ = strconv.Atoi(query.Get("offset"))
-
 	// Assign other query parameters
 	request.Name = query.Get("name")
 	request.Category = query.Get("category")
 	request.SKU = query.Get("sku")
 	request.Price = query.Get("price")
 
-	// Parse boolean values
-	request.InStock, _ = strconv.ParseBool(query.Get("inStock"))
-	request.Owned, _ = strconv.ParseBool(query.Get("owned"))
-
-	// Parse numerical values
+	// For numerical and boolean values, we need to safely parse them
+	// because they require conversion from string
 	if limit, err := strconv.Atoi(query.Get("limit")); err == nil {
 		request.Limit = limit
 	} else {
@@ -161,15 +154,21 @@ func (h *ProductHandler) FindAllProductData(w http.ResponseWriter, r *http.Reque
 	inStockStr := query.Get("inStock")
 	if inStock, err := strconv.ParseBool(inStockStr); err == nil {
 		request.InStock = inStock
-	} // defaults to false if not specified or error
+	}
 
+	isAvailableStr := query.Get("isAvailable")
+	if isAvailable, err := strconv.ParseBool(isAvailableStr); err == nil {
+		request.IsAvailable = isAvailable
+	} else {
+		request.IsAvailable = true
+	}
 	ownedStr := query.Get("owned")
 	if owned, err := strconv.ParseBool(ownedStr); err == nil {
 		request.Owned = owned
 	}
 
 	// Get user ID from JWT claim
-	claimUser, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
+	claimStaff, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
 	if !ok {
 		log.Warn().Msg("invalid claim jwt")
 		err := failure.Unauthorized("invalid claim jwt")
@@ -177,7 +176,7 @@ func (h *ProductHandler) FindAllProductData(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	staffID, err := uuid.Parse(claimUser["ownerID"].(string))
+	staffID, err := uuid.Parse(claimStaff["ownerID"].(string))
 	if err != nil {
 		log.Warn().Msg(err.Error())
 		err = failure.Unauthorized("invalid format user_id")
@@ -232,14 +231,14 @@ func (h *ProductHandler) UpdateProductData(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Get user ID from JWT claim
-	claimUser, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
+	claimStaff, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
 	if !ok {
 		log.Warn().Msg("invalid claim jwt")
 		err := failure.Unauthorized("invalid claim jwt")
 		response.WithError(w, err)
 		return
 	}
-	_, err = uuid.Parse(claimUser["ownerID"].(string))
+	_, err = uuid.Parse(claimStaff["ownerID"].(string))
 	if err != nil {
 		log.Warn().Msg(err.Error())
 		err = failure.Unauthorized("invalid format user_id")
@@ -269,14 +268,14 @@ func (h *ProductHandler) UpdateProductData(w http.ResponseWriter, r *http.Reques
 // @Router /v1/product/{id} [delete]
 func (h *ProductHandler) DeleteProductData(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	claimUser, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
+	claimStaff, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
 	if !ok {
 		log.Warn().Msg("invalid claim jwt")
 		err := failure.Unauthorized("invalid claim jwt")
 		response.WithError(w, err)
 		return
 	}
-	_, err := uuid.Parse(claimUser["ownerID"].(string))
+	_, err := uuid.Parse(claimStaff["ownerID"].(string))
 	if err != nil {
 		log.Warn().Msg(err.Error())
 		err = failure.Unauthorized("invalid format user_id")
