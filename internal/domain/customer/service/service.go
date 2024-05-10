@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"github.com/mamxalf/eniqilo-store/config"
+	"github.com/mamxalf/eniqilo-store/internal/domain/customer/model"
 	"github.com/mamxalf/eniqilo-store/internal/domain/customer/repository"
 	"github.com/mamxalf/eniqilo-store/internal/domain/customer/request"
 	"github.com/mamxalf/eniqilo-store/internal/domain/customer/response"
@@ -13,6 +14,7 @@ import (
 
 type CustomerService interface {
 	RegisterNewCustomer(ctx context.Context, req request.RegisterRequest) (res response.CustomerCreatedResponse, err error)
+	GetAllRegisteredCustomers(ctx context.Context, req request.CustomerQueryParams) (res []model.Customer, err error)
 }
 
 type CustomerServiceImpl struct {
@@ -54,5 +56,18 @@ func (c *CustomerServiceImpl) RegisterNewCustomer(ctx context.Context, req reque
 		Name:        req.Name,
 	}
 
+	return
+}
+
+func (c *CustomerServiceImpl) GetAllRegisteredCustomers(ctx context.Context, req request.CustomerQueryParams) (res []model.Customer, err error) {
+	res, err = c.CustomerRepository.FindAll(ctx, req)
+	if err != nil {
+		logger.ErrorWithMessage(err, "failed to get customers data")
+		return
+	}
+	if len(res) == 0 {
+		res = []model.Customer{}
+		return
+	}
 	return
 }

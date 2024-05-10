@@ -11,9 +11,9 @@ type CustomerRegister struct {
 }
 
 type Customer struct {
-	ID        uuid.UUID `db:"id"`
-	Name      string    `db:"name"`
-	Phone     string    `db:"phone"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID        uuid.UUID `db:"id" json:"userId"`
+	Name      string    `db:"name" json:"name"`
+	Phone     string    `db:"phone" json:"phoneNumber"`
+	CreatedAt time.Time `db:"created_at" json:"-"`
+	UpdatedAt time.Time `db:"updated_at" json:"-"`
 }

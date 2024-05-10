@@ -27,6 +27,10 @@ func ProvideCustomerHandler(customerService service.CustomerService, jwtMiddlewa
 func (h *CustomerHandler) Router(r chi.Router) {
 	r.Route("/customer", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
+			r.Use(h.JWTMiddleware.VerifyToken)
+			r.Post("/", h.GetCustomers)
+		})
+		r.Group(func(r chi.Router) {
 			r.Post("/register", h.Register)
 		})
 	})
@@ -64,4 +68,39 @@ func (h *CustomerHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.WithJSON(w, http.StatusCreated, res)
+}
+
+// GetCustomers godoc
+// @Summary Get customers
+// @Description Retrieves customers based on provided search criteria.
+// @Tags customers
+// @Accept json
+// @Produce json
+// @Param phoneNumber query string false "Search customer by phone number without the '+' sign, uses wildcard matching (ex: '62' matches '+628123...')"
+// @Param name query string false "Search customer by name, uses wildcard and case insensitive matching (ex: 'een' matches 'kayleena')"
+// @Success 200 {object} response.Base
+// @Failure 400 {object} response.Base
+// @Failure 404 {object} response.Base
+// @Failure 500 {object} response.Base
+// @Router /customer [get]
+func (h *CustomerHandler) GetCustomers(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	params := &request.CustomerQueryParams{
+		PhoneNumber: query.Get("phoneNumber"),
+		Name:        query.Get("name"),
+	}
+
+	if err := params.Validate(); err != nil {
+		logger.ErrorWithMessage(err, "Invalid parameters")
+		response.WithError(w, failure.BadRequest(err))
+		return
+	}
+
+	res, err := h.CustomerService.GetAllRegisteredCustomers(r.Context(), *params)
+	if err != nil {
+		logger.WarningWithMessage(err, "Error getting customers data")
+		response.WithError(w, err)
+		return
+	}
+	response.WithJSON(w, http.StatusOK, res)
 }

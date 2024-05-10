@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mamxalf/eniqilo-store/internal/domain/product/model"
 	"github.com/mamxalf/eniqilo-store/internal/domain/product/request"
+	"github.com/mamxalf/eniqilo-store/shared/logger"
 	"strings"
 )
 
@@ -59,6 +60,7 @@ func (r *ProductRepositoryInfra) FindAllSKU(ctx context.Context, params request.
 
 	err = r.DB.PG.SelectContext(ctx, &products, baseQuery, args...)
 	if err != nil {
+		logger.ErrorWithStack(err)
 		return
 	}
 

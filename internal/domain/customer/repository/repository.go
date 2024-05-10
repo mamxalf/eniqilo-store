@@ -3,16 +3,20 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx"
 	"github.com/mamxalf/eniqilo-store/infra"
 	"github.com/mamxalf/eniqilo-store/internal/domain/customer/model"
+	"github.com/mamxalf/eniqilo-store/internal/domain/customer/request"
 	"github.com/mamxalf/eniqilo-store/shared/failure"
 	"github.com/mamxalf/eniqilo-store/shared/logger"
+	"strings"
 )
 
 type CustomerRepository interface {
 	Register(ctx context.Context, customerRegister *model.CustomerRegister) (id uuid.UUID, err error)
+	FindAll(ctx context.Context, req request.CustomerQueryParams) (customers []model.Customer, err error)
 }
 
 type CustomerRepositoryInfra struct {
@@ -50,6 +54,37 @@ func (r *CustomerRepositoryInfra) Register(ctx context.Context, customerRegister
 		}
 		logger.ErrorWithStack(err)
 		err = failure.InternalError(err)
+		return
+	}
+	return
+}
+
+func (r *CustomerRepositoryInfra) FindAll(ctx context.Context, req request.CustomerQueryParams) (customers []model.Customer, err error) {
+	var whereClauses []string
+	var args []interface{}
+
+	// Start with a base query
+	baseQuery := "SELECT id, name, phone_number FROM customers WHERE 1=1"
+
+	// Append conditions based on non-empty parameters
+	if req.PhoneNumber != "" {
+		whereClauses = append(whereClauses, fmt.Sprintf("phone_number LIKE $%d", len(args)+1))
+		args = append(args, "%"+req.PhoneNumber+"%") // Assumes phone numbers are stored with '+'
+	}
+	if req.Name != "" {
+		whereClauses = append(whereClauses, fmt.Sprintf("LOWER(name) LIKE LOWER($%d)", len(args)+1))
+		args = append(args, "%"+req.Name+"%")
+	}
+
+	// Combine the clauses with the base query
+	if len(whereClauses) > 0 {
+		baseQuery += " AND " + strings.Join(whereClauses, " AND ")
+	}
+
+	// Execute the query
+	err = r.DB.PG.SelectContext(ctx, &customers, baseQuery, args...)
+	if err != nil {
+		logger.ErrorWithStack(err)
 		return
 	}
 	return
