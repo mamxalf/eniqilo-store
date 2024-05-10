@@ -31,6 +31,7 @@ func CreatePostgresDBConnection(config *config.Config) *sqlx.DB {
 	// Create a configuration object
 	db, err := sqlx.ConnectContext(context.Background(), "pgx", connStr)
 	if err != nil {
+		log.Debug().Err(err).Msg(connStr)
 		log.
 			Fatal().
 			Err(err).

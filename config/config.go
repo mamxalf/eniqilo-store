@@ -1,11 +1,12 @@
 package config
 
 import (
-	"sync"
-	"time"
-
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	"os"
+	"strconv"
+	"sync"
+	"time"
 )
 
 type Config struct {
@@ -40,41 +41,77 @@ var (
 )
 
 func Get() *Config {
-	viper.SetConfigFile(".env")
-	viper.ReadInConfig() // Errors here can be handled appropriately.
+	if os.Getenv("APP_ENV") == "development" {
+		viper.SetConfigFile(".env")
+		err := viper.ReadInConfig()
 
-	// Setting default values
-	viper.SetDefault("APP_NAME", "Cat-Social")
-	viper.SetDefault("APP_PORT", "8080")
-	viper.SetDefault("APP_ENV", "development")
-	viper.SetDefault("APP_URL", "http://localhost:8080")
-
-	viper.SetDefault("CORS_ALLOW_CREDENTIALS", true)
-	viper.SetDefault("CORS_ALLOWED_HEADERS", []string{"Accept", "Authorization", "Content-Type"})
-	viper.SetDefault("CORS_ALLOWED_METHODS", []string{"GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"})
-	viper.SetDefault("CORS_ALLOWED_ORIGINS", []string{"*"})
-	viper.SetDefault("CORS_ENABLE", true)
-	viper.SetDefault("CORS_MAX_AGE_SECONDS", 300)
-
-	viper.SetDefault("LOG_LEVEL", "info")
-	viper.SetDefault("JWT_SECRET", "abc")
-	viper.SetDefault("JWT_EXPIRY", "480m")
-	viper.SetDefault("BCRYPT_SALT", 10)
-
-	viper.SetDefault("DB_NAME", "postgres")
-	viper.SetDefault("DB_PORT", "5432")
-	viper.SetDefault("DB_HOST", "localhost")
-	viper.SetDefault("DB_USERNAME", "postgres")
-	viper.SetDefault("DB_PASSWORD", "password")
-	viper.SetDefault("DB_PARAMS", "sslmode=disable")
-
-	once.Do(func() {
-		log.Info().Msg("Service configuration initialized.")
-		err := viper.Unmarshal(&conf)
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("Failed reading config file")
 		}
-	})
 
-	return &conf
+		once.Do(func() {
+			log.Info().Msg("Service configuration initialized.")
+			err := viper.Unmarshal(&conf)
+			if err != nil {
+				log.Fatal().Err(err)
+			}
+		})
+		return &conf
+	} else {
+		appName := os.Getenv("APP_NAME")
+		if appName == "" {
+			appName = "Eniqilo Store"
+		}
+		appPort := os.Getenv("APP_PORT")
+		if appPort == "" {
+			appPort = "8080"
+		}
+		logLevel := os.Getenv("LOG_LEVEL")
+		if logLevel == "" {
+			logLevel = "info"
+		}
+		jwtExpiry := os.Getenv("JWT_EXPIRY")
+		if jwtExpiry == "" {
+			jwtExpiry = "480m"
+		}
+		jwtExpired, _ := time.ParseDuration(jwtExpiry)
+		corsEnable := os.Getenv("CORS_ENABLE")
+		if corsEnable == "" {
+			corsEnable = "true"
+		}
+		corsEnabler, _ := strconv.ParseBool(corsEnable)
+		corsMaxAgeSeconds := os.Getenv("CORS_MAX_AGE_SECONDS")
+		if corsMaxAgeSeconds == "" {
+			corsMaxAgeSeconds = "600"
+		}
+		corsMaxAge, _ := strconv.Atoi(corsMaxAgeSeconds)
+		// must on env
+		bcryptSalt, err := strconv.Atoi(os.Getenv("BCRYPT_SALT"))
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed parsing BCRYPT_SALT")
+		}
+		config := &Config{
+			AppName:              appName,
+			AppPort:              appPort,
+			CorsAllowCredentials: true,
+			CorsAllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+			CorsAllowedMethods:   []string{"GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"},
+			CorsAllowedOrigins:   []string{"*"},
+			LogLevel:             logLevel,
+			CorsEnable:           corsEnabler,
+			CorsMaxAgeSeconds:    corsMaxAge,
+			JwtExpiry:            jwtExpired,
+			// must on env - no default value
+			BcryptSalt: bcryptSalt,
+			JwtSecret:  os.Getenv("JWT_SECRET"),
+			DbName:     os.Getenv("DB_NAME"),
+			DbPort:     os.Getenv("DB_PORT"),
+			DbHost:     os.Getenv("DB_HOST"),
+			DbUsername: os.Getenv("DB_USERNAME"),
+			DbPassword: os.Getenv("DB_PASSWORD"),
+			DbParams:   os.Getenv("DB_PARAMS"),
+		}
+
+		return config
+	}
 }
