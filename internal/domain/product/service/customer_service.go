@@ -10,7 +10,7 @@ import (
 func (p *ProductServiceImpl) GetAllProductCustomerData(ctx context.Context, params request.ProductSKUFilterParams) (res []model.ProductSKU, err error) {
 	res, err = p.ProductRepository.FindAllSKU(ctx, params)
 	if err != nil {
-		logger.ErrorWithMessage(err, "failed to get product data")
+		logger.ErrorWithMessage(err, "failed to get products data")
 		return
 	}
 	if len(res) == 0 {

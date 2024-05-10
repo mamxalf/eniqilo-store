@@ -22,3 +22,15 @@ func (r *RegisterRequest) ToModel() (register model.CustomerRegister, err error)
 	}
 	return
 }
+
+// CustomerQueryParams represents the query parameters for fetching customers.
+type CustomerQueryParams struct {
+	PhoneNumber string `form:"phoneNumber" validate:"omitempty,min=1"`
+	Name        string `form:"name" validate:"omitempty,min=1"`
+}
+
+// Validate performs validation on CustomerQueryParams fields using validator.v10.
+func (p *CustomerQueryParams) Validate() error {
+	validate := validator.GetValidator()
+	return validate.Struct(p)
+}
