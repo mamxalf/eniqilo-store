@@ -17,6 +17,9 @@ type ProductRepository interface {
 	FindAll(ctx context.Context, staffID uuid.UUID, params request.ProductQueryParams) (products []model.Product, err error)
 	Update(ctx context.Context, productID uuid.UUID, product model.Product) (updatedProduct *model.Product, err error)
 	Delete(ctx context.Context, productID uuid.UUID) (deletedID uuid.UUID, err error)
+
+	// Product customer sku
+	FindAllSKU(ctx context.Context, params request.ProductSKUFilterParams) (cats []model.ProductSKU, err error)
 }
 
 type ProductRepositoryInfra struct {

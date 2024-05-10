@@ -1,10 +1,9 @@
 package product
 
 import (
+	"github.com/go-chi/chi"
 	"github.com/mamxalf/eniqilo-store/http/middleware"
 	"github.com/mamxalf/eniqilo-store/internal/domain/product/service"
-
-	"github.com/go-chi/chi"
 )
 
 type ProductHandler struct {
@@ -12,10 +11,10 @@ type ProductHandler struct {
 	JWTMiddleware  *middleware.JWT
 }
 
-func ProvideProductHandler(productService service.ProductService, jwt *middleware.JWT) ProductHandler {
+func ProvideProductHandler(productService service.ProductService, jwtMiddleware *middleware.JWT) ProductHandler {
 	return ProductHandler{
 		ProductService: productService,
-		JWTMiddleware:  jwt,
+		JWTMiddleware:  jwtMiddleware,
 	}
 }
 
@@ -28,5 +27,7 @@ func (h *ProductHandler) Router(r chi.Router) {
 		r.Get("/", h.FindAllProductData)
 		r.Put("/{id}", h.UpdateProductData)
 		r.Delete("/{id}", h.DeleteProductData)
+		// product customer sku
+		r.Post("/customer", h.SearchSKUProduct)
 	})
 }
