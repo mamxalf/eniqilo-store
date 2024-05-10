@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func (r *ProductRepositoryInfra) FindAll(ctx context.Context, params request.ProductFilterParams) (cats []model.Product, err error) {
-	var products []model.Product
+func (r *ProductRepositoryInfra) FindAllSKU(ctx context.Context, params request.ProductSKUFilterParams) (cats []model.ProductSKU, err error) {
+	var products []model.ProductSKU
 	var conditions []string
 	var args []interface{}
 

@@ -2,7 +2,7 @@ package model
 
 import "github.com/google/uuid"
 
-type Product struct {
+type ProductSKU struct {
 	Id        uuid.UUID `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
 	Sku       string    `db:"sku" json:"sku"`

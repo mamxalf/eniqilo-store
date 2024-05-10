@@ -8,7 +8,7 @@ import (
 )
 
 type ProductRepository interface {
-	FindAll(ctx context.Context, params request.ProductFilterParams) (cats []model.Product, err error)
+	FindAllSKU(ctx context.Context, params request.ProductSKUFilterParams) (cats []model.ProductSKU, err error)
 }
 
 type ProductRepositoryInfra struct {

@@ -2,7 +2,7 @@ package request
 
 import "github.com/mamxalf/eniqilo-store/shared/validator"
 
-type ProductFilterParams struct {
+type ProductSKUFilterParams struct {
 	Limit    int    `validate:"omitempty,min=1" form:"limit" query:"limit"`
 	Offset   int    `validate:"omitempty,min=0" form:"offset" query:"offset"`
 	Name     string `validate:"omitempty,min=1" form:"name" query:"name"`
@@ -12,7 +12,7 @@ type ProductFilterParams struct {
 	InStock  *bool  `validate:"omitempty" form:"inStock" query:"inStock"`
 }
 
-func (r *ProductFilterParams) Validate() (err error) {
+func (r *ProductSKUFilterParams) Validate() (err error) {
 	validate := validator.GetValidator()
 	return validate.Struct(r)
 }

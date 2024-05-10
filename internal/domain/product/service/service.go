@@ -9,7 +9,7 @@ import (
 )
 
 type ProductService interface {
-	GetAllProductData(ctx context.Context, params request.ProductFilterParams) (res []model.Product, err error)
+	GetAllProductCustomerData(ctx context.Context, params request.ProductSKUFilterParams) (res []model.ProductSKU, err error)
 }
 type ProductServiceImpl struct {
 	ProductRepository repository.ProductRepository

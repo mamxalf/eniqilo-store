@@ -29,7 +29,7 @@ import (
 // @Router /product/customer [get]
 func (h *ProductHandler) SearchSKUProduct(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
-	params := &request.ProductFilterParams{
+	params := &request.ProductSKUFilterParams{
 		Limit:  5, // Default value
 		Offset: 0, // Default value
 	}
@@ -75,7 +75,7 @@ func (h *ProductHandler) SearchSKUProduct(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	res, err := h.ProductService.GetAllProductData(r.Context(), *params)
+	res, err := h.ProductService.GetAllProductCustomerData(r.Context(), *params)
 	if err != nil {
 		logger.WarningWithMessage(err, "Error getting product data")
 		response.WithError(w, err)
