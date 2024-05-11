@@ -22,7 +22,7 @@ type ProductRepository interface {
 	FindAllSKU(ctx context.Context, params request.ProductSKUFilterParams) (cats []model.ProductSKU, err error)
 
 	//transactions customer
-	InsertTransaction(ctx context.Context, transaction *model.Transaction) (newTransaction *model.Transaction, err error)
+	InsertTransaction(ctx context.Context, transaction model.InsertTransaction) (newTransaction *model.Transaction, err error)
 	FindTransaction(ctx context.Context, customerID uuid.UUID) (transaction model.Transaction, err error)
 }
 

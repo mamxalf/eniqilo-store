@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(), -- uuid v4
     customer_id UUID NOT NULL,
     product_details JSONB NOT NULL,
-    paid INT NOT NULL CHECK (paid >= 1),
-    change INT NOT NULL CHECK (change >= 0),
+    paid INT NOT NULL,
+    change INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

@@ -29,5 +29,9 @@ func (h *ProductHandler) Router(r chi.Router) {
 		r.Delete("/{id}", h.DeleteProductData)
 		// product customer sku
 		r.Post("/customer", h.SearchSKUProduct)
+		// transaction customer
+		r.Post("/checkout", h.InsertNewTransaction)
+		r.Get("/checkout/history", h.FindTransaction)
+
 	})
 }

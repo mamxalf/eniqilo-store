@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
+
+	// "fmt"
 
 	"github.com/google/uuid"
 	"github.com/mamxalf/eniqilo-store/internal/domain/product/model"
@@ -13,19 +14,11 @@ import (
 	"github.com/mamxalf/eniqilo-store/shared/logger"
 )
 
-var transactionQueries = struct {
-	InsertTransaction string
-	GetTransaction    string
-}{
-	InsertTransaction: "INSERT INTO transactions %s VALUES %s RETURNING id",
-	GetTransaction:    "SELECT * FROM transactions %s",
-}
-
-func (p *ProductRepositoryInfra) InsertTransaction(ctx context.Context, transaction *model.Transaction) (*model.Transaction, error) {
+func (p *ProductRepositoryInfra) InsertTransaction(ctx context.Context, transaction model.InsertTransaction) (newTransaction *model.Transaction, err error) {
 	query := `INSERT INTO transactions (customer_id, product_details, paid, change)
-				  VALUES ($1, $2, $3, $4, $5)
+				  VALUES ($1, $2, $3, $4)
 				  RETURNING id, customer_id, product_details, paid, change;`
-	newTransaction := &model.Transaction{}
+	newTransaction = &model.Transaction{}
 	productDetailsJSON, err := json.Marshal(transaction.ProductDetails)
 	if err != nil {
 		logger.ErrorWithStack(err)
@@ -41,17 +34,24 @@ func (p *ProductRepositoryInfra) InsertTransaction(ctx context.Context, transact
 }
 
 func (p *ProductRepositoryInfra) FindTransaction(ctx context.Context, customerID uuid.UUID) (transaction model.Transaction, err error) {
-	whereClauses := " WHERE id = $1 LIMIT 1"
-	query := fmt.Sprintf(transactionQueries.GetTransaction, whereClauses)
-	err = p.DB.PG.GetContext(ctx, &transaction, query, customerID)
+	query := `
+		SELECT transaction_id, customer_id, product_details, paid, change, created_at
+		FROM transactions
+		WHERE customer_id = $1
+		ORDER BY created_at DESC
+		LIMIT 5 OFFSET 0
+	`
+
+	err = p.DB.PG.GetContext(ctx, &transaction, query, customerID.String())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			err = failure.NotFound("Transaction not found!")
+			err = failure.NotFound("Transaction not found")
 			return
 		}
 		logger.ErrorWithStack(err)
 		err = failure.InternalError(err)
 		return
 	}
-	return
+
+	return transaction, nil
 }
