@@ -2,7 +2,6 @@ package product
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	// "strconv"
@@ -35,34 +34,18 @@ func (h *ProductHandler) InsertNewTransaction(w http.ResponseWriter, r *http.Req
 		response.WithError(w, failure.BadRequest(err))
 		return
 	}
-
 	if err := transactionRequest.Validate(); err != nil {
 		response.WithError(w, failure.BadRequest(err))
 		return
 	}
-	claimCustomer, ok := middleware.GetClaimsUser(r.Context()).(jwt.MapClaims)
-	if !ok {
-		log.Warn().Msg("invalid claim jwt")
-		err := failure.Unauthorized("invalid claim jwt")
-		response.WithError(w, err)
-		return
-	}
-	customerID, err := uuid.Parse(claimCustomer["customerID"].(string))
-	if err != nil {
-		log.Warn().Msg(err.Error())
-		err = failure.Unauthorized("invalid format customer_id")
-		response.WithError(w, err)
-		return
-	}
-	transactionRequest.CustomerID = customerID
-	fmt.Println("transaction request:", transactionRequest)
-	res, err := h.ProductService.InsertNewTransaction(r.Context(), transactionRequest)
+
+	err := h.ProductService.InsertNewTransaction(r.Context(), transactionRequest)
 	if err != nil {
 		response.WithError(w, err)
 		return
 	}
 
-	response.WithJSON(w, http.StatusCreated, res)
+	response.WithMessage(w, http.StatusOK, "Succes Insert request")
 }
 
 // GetCheckoutHistory handles the retrieval of checkout history.
@@ -99,39 +82,6 @@ func (h *ProductHandler) FindTransaction(w http.ResponseWriter, r *http.Request)
 	}
 
 	res, err := h.ProductService.GetTransactionData(r.Context(), customerID, idStr)
-	if err != nil {
-		response.WithError(w, err)
-		return
-	}
-	response.WithJSON(w, http.StatusOK, res)
-}
-
-// GetTransactionData handles the retrieval of transaction data for a customer.
-// @Summary Get Transaction Data
-// @Description This endpoint retrieves transaction data for a customer.
-// @Tags Transaction
-// @Accept json
-// @Produce json
-// @Security BearerToken
-// @Param customerId query string false "Customer ID" Format: UUID
-// @Success 200 {object} response.TransactionResponse "Successful operation"
-// @Failure 400 {object} response.Base "Bad request"
-// @Failure 401 {object} response.Base "Unauthorized"
-// @Failure 500 {object} response.Base "Internal server error"
-// @Router /v1/product/checkout/history [get]
-func (h *ProductHandler) GetTransactionData(w http.ResponseWriter, r *http.Request) {
-	queryParams := r.URL.Query()
-	customerIDStr := queryParams.Get("customerId")
-	customerID, err := uuid.Parse(customerIDStr)
-	if err != nil {
-		log.Warn().Msg("Invalid customer ID format")
-		err := failure.BadRequest(err)
-		response.WithError(w, err)
-		return
-	}
-
-	// Call service to get transaction data
-	res, err := h.ProductService.GetTransactionData(r.Context(), customerID, "")
 	if err != nil {
 		response.WithError(w, err)
 		return
