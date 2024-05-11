@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 
-	// "fmt"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/mamxalf/eniqilo-store/internal/domain/product/model"
+	"github.com/mamxalf/eniqilo-store/internal/domain/product/request"
 	"github.com/mamxalf/eniqilo-store/shared/failure"
 	"github.com/mamxalf/eniqilo-store/shared/logger"
 )
@@ -32,25 +33,98 @@ func (p *ProductRepositoryInfra) InsertTransaction(ctx context.Context, transact
 	return
 }
 
-func (p *ProductRepositoryInfra) FindTransaction(ctx context.Context, customerID uuid.UUID) (transaction model.Transaction, err error) {
-	query := `
-		SELECT transaction_id, customer_id, product_details, paid, change, created_at
-		FROM transactions
-		WHERE customer_id = $1
-		ORDER BY created_at DESC
-		LIMIT 5 OFFSET 0
-	`
+// func (p *ProductRepositoryInfra) FindTransaction(ctx context.Context, customerID uuid.UUID, params request.TransactionQueryParams) (transactions []model.Transaction, err error) {
+// 	query := `
+// 		SELECT id, customer_id, product_details, paid, change, created_at, updated_at
+// 		FROM transactions
+// 		WHERE customer_id = ?`
 
-	err = p.DB.PG.GetContext(ctx, &transaction, query, customerID.String())
+// 	var args []interface{}
+// 	args = append(args, customerID)
+
+// 	if params.CreatedAt == "asc" || params.CreatedAt == "desc" {
+// 		query += fmt.Sprintf(" ORDER BY created_at %s", params.CreatedAt)
+// 	} else {
+// 		logger.Info("Invalid createdAt value. Ignoring the parameter.")
+// 	}
+
+// 	query += " LIMIT ? OFFSET ?"
+// 	args = append(args, params.Limit, params.Offset)
+
+// 	err = p.DB.PG.SelectContext(ctx, &transactions, query, args...)
+// 	if err != nil {
+// 		if errors.Is(err, sql.ErrNoRows) {
+// 			err = failure.NotFound("Transactions not found")
+// 			return nil, err
+// 		}
+// 		logger.ErrorWithStack(err)
+// 		err = failure.InternalError(err)
+// 		return nil, err
+// 	}
+
+// 	return transactions, nil
+// }
+
+// func (p *ProductRepositoryInfra) FindTransaction(ctx context.Context, customerID uuid.UUID, params request.TransactionQueryParams) (transactions []model.Transaction, err error) {
+// 	query := `
+// 		SELECT id, customer_id, product_details, paid, change, created_at, updated_at
+// 		FROM transactions
+// 		WHERE customer_id = $1`
+
+// 	var args []interface{}
+// 	args = append(args, customerID)
+
+// 	if params.CreatedAt == "asc" || params.CreatedAt == "desc" {
+// 		query += fmt.Sprintf(" ORDER BY created_at %s", params.CreatedAt)
+// 	} else {
+// 		logger.Info("Invalid createdAt value. Ignoring the parameter.")
+// 	}
+
+// 	query += " LIMIT $2 OFFSET $3"
+// 	args = append(args, params.Limit, params.Offset)
+
+// 	err = p.DB.PG.SelectContext(ctx, &transactions, query, args...)
+// 	if err != nil {
+// 		if errors.Is(err, sql.ErrNoRows) {
+// 			err = failure.NotFound("Transactions not found")
+// 			return nil, err
+// 		}
+// 		logger.ErrorWithStack(err)
+// 		err = failure.InternalError(err)
+// 		return nil, err
+// 	}
+
+// 	return transactions, nil
+// }
+
+func (p *ProductRepositoryInfra) FindTransaction(ctx context.Context, customerID uuid.UUID, params request.TransactionQueryParams) (transactions []model.Transaction, err error) {
+	query := `
+		SELECT id, customer_id, product_details, paid, change, created_at, updated_at
+		FROM transactions
+		WHERE customer_id = $1`
+
+	var args []interface{}
+	args = append(args, customerID)
+
+	if params.CreatedAt == "asc" || params.CreatedAt == "desc" {
+		query += fmt.Sprintf(" ORDER BY created_at %s", params.CreatedAt)
+	} else {
+		logger.Info("Invalid createdAt value. Ignoring the parameter.")
+	}
+
+	query += " LIMIT $2 OFFSET $3"
+	args = append(args, params.Limit, params.Offset)
+
+	err = p.DB.PG.SelectContext(ctx, &transactions, query, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			err = failure.NotFound("Transaction not found")
-			return
+			err = failure.NotFound("Transactions not found")
+			return nil, err
 		}
 		logger.ErrorWithStack(err)
 		err = failure.InternalError(err)
-		return
+		return nil, err
 	}
 
-	return transaction, nil
+	return transactions, nil
 }

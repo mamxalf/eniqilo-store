@@ -25,7 +25,7 @@ type ProductService interface {
 
 	//transaction customer
 	InsertNewTransaction(ctx context.Context, req request.InsertTransactionRequest) (err error)
-	GetTransactionData(ctx context.Context, customerID uuid.UUID, transactionID string) (res response.TransactionResponse, err error)
+	GetTransactionData(ctx context.Context, customerID uuid.UUID, params request.TransactionQueryParams) (res []response.TransactionResponse, err error)
 }
 
 type ProductServiceImpl struct {

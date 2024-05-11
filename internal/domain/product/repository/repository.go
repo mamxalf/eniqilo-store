@@ -23,7 +23,7 @@ type ProductRepository interface {
 
 	//transactions customer
 	InsertTransaction(ctx context.Context, transaction model.InsertTransaction) (err error)
-	FindTransaction(ctx context.Context, customerID uuid.UUID) (transaction model.Transaction, err error)
+	FindTransaction(ctx context.Context, customerID uuid.UUID, params request.TransactionQueryParams) (transactions []model.Transaction, err error)
 }
 
 type ProductRepositoryInfra struct {

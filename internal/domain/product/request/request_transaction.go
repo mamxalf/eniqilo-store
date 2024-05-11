@@ -41,3 +41,15 @@ func (r *InsertTransactionRequest) ToModel() (transaction model.InsertTransactio
 	transaction.ProductDetails = productDetails
 	return
 }
+
+type TransactionQueryParams struct {
+	CustomerID string `json:"customerId" validate:"omitempty"`
+	Limit      int    `json:"limit" validate:"omitempty,min=1"`
+	Offset     int    `json:"offset" validate:"omitempty,min=0"`
+	CreatedAt  string `json:"createdAt" validate:"omitempty,oneof=asc desc"`
+}
+
+func (r *TransactionQueryParams) Validate() (err error) {
+	validate := validator.GetValidator()
+	return validate.Struct(r)
+}
