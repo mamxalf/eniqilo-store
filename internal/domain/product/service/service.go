@@ -24,7 +24,7 @@ type ProductService interface {
 	GetAllProductCustomerData(ctx context.Context, params request.ProductSKUFilterParams) (res []model.ProductSKU, err error)
 
 	//transaction customer
-	InsertNewTransaction(ctx context.Context, req request.InsertTransactionRequest) (res response.TransactionResponse, err error)
+	InsertNewTransaction(ctx context.Context, req request.InsertTransactionRequest) (err error)
 	GetTransactionData(ctx context.Context, customerID uuid.UUID, transactionID string) (res response.TransactionResponse, err error)
 }
 
