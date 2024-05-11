@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx"
 	"github.com/mamxalf/eniqilo-store/internal/domain/staff/model"
 	"github.com/mamxalf/eniqilo-store/shared/failure"
 	"github.com/mamxalf/eniqilo-store/shared/logger"
@@ -29,12 +29,16 @@ func (u *StaffRepositoryInfra) Register(ctx context.Context, staffRegister *mode
 	// Extract fields from staffRegister and pass them to QueryRowContext
 	err = stmt.QueryRowContext(ctx, staffRegister.Name, staffRegister.Phone, staffRegister.Password).Scan(&id)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
+		var pqErr pgx.PgError
+		if errors.As(err, &pqErr) {
 			// Check if the error code is for a unique violation
 			if pqErr.Code == "23505" {
 				err = failure.Conflict("Duplicate key error occurred", pqErr.Message)
 				return
 			}
+			logger.ErrorWithStack(err)
+			err = failure.InternalError(err)
+			return
 		}
 		logger.ErrorWithStack(err)
 		err = failure.InternalError(err)
