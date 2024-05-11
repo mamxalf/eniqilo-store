@@ -34,6 +34,7 @@ func (h *ProductHandler) InsertNewTransaction(w http.ResponseWriter, r *http.Req
 		response.WithError(w, failure.BadRequest(err))
 		return
 	}
+
 	if err := transactionRequest.Validate(); err != nil {
 		response.WithError(w, failure.BadRequest(err))
 		return

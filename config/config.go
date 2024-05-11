@@ -41,23 +41,11 @@ var (
 )
 
 func Get() *Config {
-	if os.Getenv("APP_ENV") == "development" {
-		viper.SetConfigFile(".env")
-		err := viper.ReadInConfig()
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
 
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed reading config file")
-		}
-
-		once.Do(func() {
-			log.Info().Msg("Service configuration initialized.")
-			err := viper.Unmarshal(&conf)
-			if err != nil {
-				log.Fatal().Err(err)
-			}
-		})
-		return &conf
-	} else {
+	if err != nil {
+		log.Error().Err(err).Msg("Failed reading config file")
 		appName := os.Getenv("APP_NAME")
 		if appName == "" {
 			appName = "Eniqilo Store"
@@ -111,7 +99,15 @@ func Get() *Config {
 			DbPassword: os.Getenv("DB_PASSWORD"),
 			DbParams:   os.Getenv("DB_PARAMS"),
 		}
-
 		return config
+	} else {
+		once.Do(func() {
+			log.Info().Msg("Service configuration initialized.")
+			err := viper.Unmarshal(&conf)
+			if err != nil {
+				log.Fatal().Err(err)
+			}
+		})
+		return &conf
 	}
 }
