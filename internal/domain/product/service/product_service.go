@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/mamxalf/eniqilo-store/internal/domain/product/model"
 
 	"github.com/mamxalf/eniqilo-store/internal/domain/product/request"
 	"github.com/mamxalf/eniqilo-store/internal/domain/product/response"
@@ -66,30 +67,15 @@ func (u *ProductServiceImpl) GetProductData(ctx context.Context, staffID uuid.UU
 	return
 }
 
-func (u *ProductServiceImpl) GetAllProductData(ctx context.Context, staffID uuid.UUID, params request.ProductQueryParams) (res []response.ProductResponse, err error) {
-	var productList []response.ProductResponse
-	products, err := u.ProductRepository.FindAll(ctx, staffID, params)
+func (u *ProductServiceImpl) GetAllProductData(ctx context.Context, staffID uuid.UUID, params request.ProductQueryParams) (res []model.Product, err error) {
+	res, err = u.ProductRepository.FindAll(ctx, staffID, params)
 	if err != nil {
 		return
 	}
-	if len(products) == 0 {
-		return []response.ProductResponse{}, nil
+	if len(res) == 0 {
+		return []model.Product{}, nil
 	}
-	for _, product := range products {
-		productList = append(productList, response.ProductResponse{
-			ID:          product.ID,
-			Name:        product.Name,
-			SKU:         product.SKU,
-			Category:    product.Category,
-			ImageURL:    product.ImageURL,
-			Notes:       product.Notes,
-			Price:       product.Price,
-			Stock:       product.Stock,
-			Location:    product.Location,
-			IsAvailable: product.IsAvailable,
-		})
-	}
-	res = productList
+
 	return
 }
 func (u *ProductServiceImpl) UpdateProductData(ctx context.Context, productID uuid.UUID, req request.UpdateProductRequest) (res response.ProductResponse, err error) {

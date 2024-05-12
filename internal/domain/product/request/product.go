@@ -9,15 +9,15 @@ import (
 
 type InsertProductRequest struct {
 	StaffID     uuid.UUID `json:"-"`
-	Name        string    `validate:"required,min=1,max=30"`
-	SKU         string    `validate:"required,min=1,max=30"`
-	Category    string    `validate:"required,oneof='Clothing' 'Accessories' 'Footwear' 'Beverages'"`
-	ImageURL    string    `validate:"required,url"`
-	Notes       string    `validate:"required,min=1,max=200"`
-	Price       int       `validate:"required,min=1"`
-	Stock       int       `validate:"required,min=0,max=100000"`
-	Location    string    `validate:"required,min=1,max=200"`
-	IsAvailable bool      `validate:"required"`
+	Name        string    `json:"name" validate:"required,min=1,max=30"`
+	SKU         string    `json:"sku" validate:"required,min=1,max=30"`
+	Category    string    `json:"category" validate:"required,oneof='Clothing' 'Accessories' 'Footwear' 'Beverages'"`
+	ImageURL    string    `json:"imageUrl" validate:"required,url"`
+	Notes       string    `json:"notes" validate:"required,min=1,max=200"`
+	Price       int       `json:"price" validate:"required,min=1"`
+	Stock       int       `json:"stock" validate:"required,min=0,max=100000"`
+	Location    string    `json:"location" validate:"required,min=1,max=200"`
+	IsAvailable bool      `json:"isAvailable"`
 }
 
 func (r *InsertProductRequest) Validate() (err error) {

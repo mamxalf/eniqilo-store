@@ -16,7 +16,7 @@ type ProductService interface {
 	// Product Service Interface
 	InsertNewProduct(ctx context.Context, req request.InsertProductRequest) (res response.ProductResponse, err error)
 	GetProductData(ctx context.Context, staffID uuid.UUID, productID string) (res response.ProductResponse, err error)
-	GetAllProductData(ctx context.Context, staffID uuid.UUID, params request.ProductQueryParams) (res []response.ProductResponse, err error)
+	GetAllProductData(ctx context.Context, staffID uuid.UUID, params request.ProductQueryParams) (res []model.Product, err error)
 	UpdateProductData(ctx context.Context, productID uuid.UUID, req request.UpdateProductRequest) (res response.ProductResponse, err error)
 	DeleteProductData(ctx context.Context, productID string) (res response.ProductResponse, err error)
 
