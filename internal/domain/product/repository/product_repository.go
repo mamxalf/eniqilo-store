@@ -134,19 +134,6 @@ func (p *ProductRepositoryInfra) FindAll(ctx context.Context, StaffID uuid.UUID,
 	// Adding pagination with proper indexing
 	baseQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
 	args = append(args, params.Limit, params.Offset)
-
-	fmt.Println("Owned:", params.Owned)
-	fmt.Println("ID:", params.ID)
-	fmt.Println("SKU:", params.SKU)
-	fmt.Println("Category:", params.Category)
-	fmt.Println("Search:", params.Search)
-	fmt.Println("IsAvailable:", params.IsAvailable)
-	fmt.Println("Price:", params.Price)
-	fmt.Println("CreatedAt:", params.CreatedAt)
-	fmt.Println("InStock:", params.InStock)
-	fmt.Println("Limit:", params.Limit)
-	fmt.Println("Offset:", params.Offset)
-	fmt.Println("baseQuery:", baseQuery)
 	// Executing the query
 	err = p.DB.PG.SelectContext(ctx, &products, baseQuery, args...)
 	if err != nil {
